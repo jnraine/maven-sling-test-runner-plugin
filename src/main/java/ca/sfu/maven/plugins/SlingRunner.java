@@ -31,20 +31,6 @@ public class SlingRunner extends AbstractMojo {
 	 */
 	private URL slingUrl;
 
-	/**
-	 * User used to connect to Sling server
-	 * @parameter
-	 * @required
-	 */
-	private String user;
-
-	/**
-	 * Password used to connect to Sling server
-	 * @parameter
-	 * @required
-	 */
-	private String password;
-
 	public void execute() throws MojoExecutionException {
 		String testResults = runTests();
 		writeTestResultsToFile(testResults);
@@ -56,6 +42,7 @@ public class SlingRunner extends AbstractMojo {
 
 	protected void writeTestResultsToFile(String testResults) throws MojoExecutionException {
 		try {
+			getLog().info("Writing test results to " + testFilePath());
 			BufferedWriter out = new BufferedWriter(new FileWriter(testFilePath()));
 			out.write(testResults);
 			out.close();
@@ -67,6 +54,7 @@ public class SlingRunner extends AbstractMojo {
 
 	protected String runTests() throws MojoExecutionException {
 		try {
+			getLog().info("Running Sling tests on " + testUrl());
 			URLConnection urlConnection = testUrl().openConnection();
 			((HttpURLConnection)urlConnection).setRequestMethod("POST");
 			urlConnection.setDoInput(true);
@@ -89,6 +77,7 @@ public class SlingRunner extends AbstractMojo {
 
 			inStream.close();
 
+			getLog().debug("Test results: " + response);
 			return response;
 		} catch(Exception e) {
 			throw new MojoExecutionException("A problem occurred while running tests", e);
