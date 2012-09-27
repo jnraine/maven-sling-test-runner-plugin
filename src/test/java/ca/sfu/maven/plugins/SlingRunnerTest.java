@@ -27,10 +27,15 @@ public class SlingRunnerTest {
 	/**
 	 * This test only passes if you have a Sling server running on localhost:4502
 	 */
-	public void testRunTests() throws MojoExecutionException, MalformedURLException {
-		if(slingRunner == null) { throw new RuntimeException("sling runner is null"); }
+	public void testRunTests() throws MojoExecutionException, MalformedURLException, SlingServerDownException {
 		slingRunner.setSlingUrl(new URL("http://localhost:4502"));
 		assertThat("should be a bunch of xml", slingRunner.runTests(), startsWith("<?xml"));
+	}
+
+	@Test (expected=SlingServerDownException.class)
+	public void testRunTestsWithServerOutage() throws MalformedURLException, MojoExecutionException, SlingServerDownException {
+		slingRunner.setSlingUrl(new URL("http://www.google.com"));
+		slingRunner.runTests();
 	}
 
 	@Test

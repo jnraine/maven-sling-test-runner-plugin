@@ -32,8 +32,12 @@ public class SlingRunner extends AbstractMojo {
 	private URL slingUrl;
 
 	public void execute() throws MojoExecutionException {
-		String testResults = runTests();
-		writeTestResultsToFile(testResults);
+		try {
+			String testResults = runTests();
+			writeTestResultsToFile(testResults);
+		} catch (SlingServerDownException e) {
+			throw new MojoExecutionException(e.getMessage(), e);
+		}
 	}
 
 	protected String testFilePath() {
@@ -52,7 +56,7 @@ public class SlingRunner extends AbstractMojo {
 		}
 	}
 
-	protected String runTests() throws MojoExecutionException {
+	protected String runTests() throws MojoExecutionException, SlingServerDownException {
 		try {
 			getLog().info("Running Sling tests on " + testUrl());
 			URLConnection urlConnection = testUrl().openConnection();
@@ -79,6 +83,8 @@ public class SlingRunner extends AbstractMojo {
 
 			getLog().debug("Test results: " + response);
 			return response;
+		} catch(FileNotFoundException e) {
+			throw new SlingServerDownException("The Sling test server appears to be down", e);
 		} catch(Exception e) {
 			throw new MojoExecutionException("A problem occurred while running tests", e);
 		}
