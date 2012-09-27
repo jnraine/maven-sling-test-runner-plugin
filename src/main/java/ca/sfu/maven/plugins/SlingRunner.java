@@ -32,12 +32,8 @@ public class SlingRunner extends AbstractMojo {
 	private URL slingUrl;
 
 	public void execute() throws MojoExecutionException {
-		try {
-			String testResults = runTests();
-			writeTestResultsToFile(testResults);
-		} catch (SlingServerDownException e) {
-			throw new MojoExecutionException(e.getMessage(), e);
-		}
+		String testResults = runTests();
+		writeTestResultsToFile(testResults);
 	}
 
 	protected String testFilePath() {
@@ -56,22 +52,27 @@ public class SlingRunner extends AbstractMojo {
 		}
 	}
 
-	protected String runTests() throws MojoExecutionException, SlingServerDownException {
+	protected String runTests() throws MojoExecutionException {
 		try {
 			getLog().info("Running Sling tests on " + testUrl());
-			URLConnection urlConnection = testUrl().openConnection();
-			((HttpURLConnection)urlConnection).setRequestMethod("POST");
-			urlConnection.setDoInput(true);
-			urlConnection.setDoOutput(true);
-			urlConnection.setUseCaches(false);
-			urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-			urlConnection.setRequestProperty("Content-Length", "0");
-
-			DataOutputStream outStream = new DataOutputStream(urlConnection.getOutputStream());
-			DataInputStream inStream = new DataInputStream(urlConnection.getInputStream());
-
+			HttpURLConnection connection = (HttpURLConnection) testUrl().openConnection();
+			connection.setRequestMethod("POST");
+			connection.setDoInput(true);
+			connection.setDoOutput(true);
+			connection.setUseCaches(false);
+			connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+			connection.setRequestProperty("Content-Length", "0");
+			DataOutputStream outStream = new DataOutputStream(connection.getOutputStream());
 			outStream.flush();
 			outStream.close();
+
+			DataInputStream inStream;
+			if(connection.getResponseCode() == 404) {
+				getLog().info("Zero tests found on server");
+				inStream = new DataInputStream(connection.getErrorStream());
+			} else {
+				inStream = new DataInputStream(connection.getInputStream());
+			}
 
 			String buffer;
 			String response = "";
@@ -83,8 +84,6 @@ public class SlingRunner extends AbstractMojo {
 
 			getLog().debug("Test results: " + response);
 			return response;
-		} catch(FileNotFoundException e) {
-			throw new SlingServerDownException("The Sling test server appears to be down", e);
 		} catch(Exception e) {
 			throw new MojoExecutionException("A problem occurred while running tests", e);
 		}

@@ -5,7 +5,7 @@
 	<groupId>ca.sfu.maven.plugins</groupId>
 	<artifactId>maven-sling-test-runner-plugin</artifactId>
 	<packaging>maven-plugin</packaging>
-	<version>1.2</version>
+	<version>1.2-SNAPSHOT</version>
 	<name>Maven Sling Test Runner Plugin</name>
 	<description>A maven plugin that runs tests on a specified Sling server through the provided Sling Testing Tools (details on the tools: http://maven.apache.org/guides/plugin/guide-java-plugin-development.html)</description>
 	<url>http://maven.apache.org</url>
